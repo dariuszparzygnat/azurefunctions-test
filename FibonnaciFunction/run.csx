@@ -2,20 +2,27 @@ using System.Net;
 
 public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log)
 {
-    log.Info("C# HTTP trigger function processed a request.");
-
     // parse query parameter
     string name = req.GetQueryNameValuePairs()
-        .FirstOrDefault(q => string.Compare(q.Key, "name", true) == 0)
+        .FirstOrDefault(q => string.Compare(q.Key, "fibonnaciSteps", true) == 0)
         .Value;
 
-    // Get request body
-    dynamic data = await req.Content.ReadAsAsync<object>();
+    int numberOfFibonnaciSteps;
+    if (!Int32.TryParse(name, out numberOfFibonnaciSteps))
+        return req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a name on the query string or in the request body");
+    var fibonnaciResult = CountFibonnaci(numberOfFibonnaciSteps);
+    return req.CreateResponse(HttpStatusCode.OK, "Fibonnaci result" + fibonnaciResult);
+}
 
-    // Set name to query string or body data
-    name = name ?? data?.name;
-
-    return name == null
-        ? req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a name on the query string or in the request body")
-        : req.CreateResponse(HttpStatusCode.OK, "Hello " + name);
+private static int CountFibonnaci(int n)
+{
+    int a = 0;
+    int b = 1;
+    for (int i = 0; i < n; i++)
+    {
+        int temp = a;
+        a = b;
+        b = temp + b;
+    }
+    return a;
 }
